@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:test_web_app/custom_canvas_painter.dart';
+import 'package:test_web_app/mock/mock_input.dart';
 import 'package:test_web_app/model/layout_model.dart';
 import 'package:test_web_app/views.dart';
 
@@ -47,15 +48,15 @@ class MyHomePage extends StatefulWidget {
 }
 
 class HomeWidget extends StatefulWidget {
-
   @override
   HomeWidgetState createState() => HomeWidgetState();
 }
 
 class HomeWidgetState extends State<HomeWidget> {
-
   GlobalKey<AndGateState> firstLevelAndGateKey = GlobalKey();
   GlobalKey<AndGateState> secondLevelAndGateKey = GlobalKey();
+
+  Map<String, GlobalKey<AndGateState>> globalListCache = Map();
 
   double startX = 0.0;
   double startY = 0.0;
@@ -68,28 +69,67 @@ class HomeWidgetState extends State<HomeWidget> {
 
     Layout.fromJson(jsonInput);
 
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      print("PostFrameCallback in HomeWidgetState ${timeStamp}timeStamp");
-
-      RenderBox firstAndGateRO = firstLevelAndGateKey.currentContext.findRenderObject();
-      RenderBox secondAndGateRO = secondLevelAndGateKey.currentContext.findRenderObject();
-
-      Offset firstGateOffset = firstAndGateRO.localToGlobal(Offset.zero);
-      Offset secondGateOffset = secondAndGateRO.localToGlobal(Offset.zero);
-
-      setState(() {
-        startX = firstGateOffset.dx;
-        startY = firstGateOffset.dy;
-        endX = secondGateOffset.dx;
-        endY = secondGateOffset.dy;
-
-      });
-
-      print("firstAndGateRO size ${firstAndGateRO.size} Pos "
-          "${firstAndGateRO.localToGlobal(Offset.zero)}");
-    });
+//    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {afterLayout();});
   }
 
+  void afterLayout() {
+    print("PostFrameCallback in HomeWidgetState ");
+
+    RenderBox firstAndGateRO =
+        firstLevelAndGateKey.currentContext.findRenderObject();
+    RenderBox secondAndGateRO =
+        secondLevelAndGateKey.currentContext.findRenderObject();
+
+    Offset firstGateOffset = firstAndGateRO.localToGlobal(Offset.zero);
+    Offset secondGateOffset = secondAndGateRO.localToGlobal(Offset.zero);
+
+    setState(() {
+      startX = firstGateOffset.dx;
+      startY = firstGateOffset.dy;
+      endX = secondGateOffset.dx;
+      endY = secondGateOffset.dy;
+    });
+
+    print("firstAndGateRO size ${firstAndGateRO.size} Pos "
+        "${firstAndGateRO.localToGlobal(Offset.zero)}");
+  }
+
+  Column constructLayoutFromJson() {
+    List<List<Layout>> layoutList = Layout.fromJson(jsonInput);
+    return Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: layoutList.map((e) => getRowForLayout(e)).toList());
+  }
+
+  Widget getRowForLayout(List<Layout> layoutRow) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 50),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: layoutRow.map((e) => getItemForLayout(e)).toList(),
+      )
+    );
+  }
+
+  Widget getItemForLayout(Layout layout) {
+    return Container(
+      width: 150,
+      height: 150,
+      child: getLogicGate(layout),
+    );
+  }
+
+  Widget getLogicGate(Layout layout) {
+    GlobalKey<AndGateState> key = GlobalKey();
+    globalListCache[layout.globalKey] = key;
+    switch (layout.gateType) {
+      case LogicGateType.AND:
+        return AndGateWidget(key: key);
+      default:
+        throw AssertionError("Invalid gate type ${layout.gateType}");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -98,48 +138,53 @@ class HomeWidgetState extends State<HomeWidget> {
         child: Stack(
           children: <Widget>[
             Lines(),
-             PCBLayoutWidget(startX,startY,endX,endY),
-             Container(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: <Widget>[
-                      LogicGate("AND"),
-                      Container(
-                        width: 150,
-                        height: 150,
-                        child: AndGateWidget(key: secondLevelAndGateKey,),
-                      ),
-                      Container(
-                          width: 150,
-                          height: 150,
-                          child: NotGateWidget(key: ValueKey("3"),)
-                      ),
-                    ],
-                  ),
-                  SizedBox(
-                    height: 56,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: <Widget>[
-                      Container(
-                        width: 150,
-                        height: 150,
-                        child: AndGateWidget(key:firstLevelAndGateKey),
-                      ),
-                      Container(
-                          width: 150,
-                          height: 150,
-                          child: NotGateWidget(key: ValueKey("1"),)
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+            PCBLayoutWidget(startX, startY, endX, endY),
+            Container(
+              child: constructLayoutFromJson(),
+//              child: Column(
+//                mainAxisAlignment: MainAxisAlignment.end,
+//                crossAxisAlignment: CrossAxisAlignment.center,
+//                children: <Widget>[
+//                  Row(
+//                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+//                    children: <Widget>[
+//                      LogicGate("AND"),
+//                      Container(
+//                        width: 150,
+//                        height: 150,
+//                        child: AndGateWidget(
+//                          key: secondLevelAndGateKey,
+//                        ),
+//                      ),
+//                      Container(
+//                          width: 150,
+//                          height: 150,
+//                          child: NotGateWidget(
+//                            key: ValueKey("3"),
+//                          )),
+//                    ],
+//                  ),
+//                  SizedBox(
+//                    height: 56,
+//                  ),
+//                  Row(
+//                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+//                    children: <Widget>[
+//                      Container(
+//                        width: 150,
+//                        height: 150,
+//                        child: AndGateWidget(key: firstLevelAndGateKey),
+//                      ),
+//                      Container(
+//                          width: 150,
+//                          height: 150,
+//                          child: NotGateWidget(
+//                            key: ValueKey("1"),
+//                          )),
+//                    ],
+//                  ),
+//                ],
+//              ),
             ),
           ],
         ),
@@ -218,23 +263,3 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-
-
-
-final String jsonInput = """
-  [
-   {
-      "global_key":"fr_2_and",
-      "gate_type":1,
-      "output_map":[
-         {
-            "global_key":"sr_2_and",
-            "input":1
-         },
-         {
-            "global_key":"sr_1_and",
-            "input":1
-         }
-      ]
-   }
-] """;

@@ -2,33 +2,44 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 
-class Layout{
-
-  String globalKey ;
+class Layout {
+  String globalKey;
   int gateType;
   List<OutputMap> outputMapList = List();
 
-  Layout(this.globalKey,this.gateType);
+  Layout(this.globalKey, this.gateType);
 
-  static void fromJson(@required String json){
+  static List<List<Layout>> fromJson(@required String json) {
+    List<List<Layout>> output = List();
 
-    List<Layout> output = List();
+    List<dynamic> jsonMap = jsonDecode(json);
+    for (int columnIndex = 0, COLUMN_SIZE = jsonMap.length;
+        columnIndex < COLUMN_SIZE;
+        columnIndex++) {
+      List<Layout> layoutRowList = List();
 
-    List<dynamic> layoutList = jsonDecode(json);
-    for(int i=0, SIZE=layoutList.length;i<SIZE;i++){
-      var currentItem = layoutList[i];
-      Layout layout = Layout(currentItem["global_key"],currentItem["gate_type"]);
+      List<dynamic> rowLayoutList = jsonMap[columnIndex];
+      for (int rowIndex = 0, ROW_SIZE = rowLayoutList.length;
+          rowIndex < ROW_SIZE;
+          rowIndex++) {
+        var currentItem = jsonMap[columnIndex][rowIndex];
+        Layout layout =
+            Layout(currentItem["global_key"], currentItem["gate_type"]);
 
-      List<dynamic> outputMapList = currentItem["output_map"];
-      for(int j=0,MAP_SIZE=outputMapList.length;j<MAP_SIZE;j++){
-        var outputMap = outputMapList[j];
-        layout.outputMapList.add(OutputMap(outputMap["global_key"], outputMap["input"]));
+        List<dynamic> outputMapList = currentItem["output_map"];
+        for (int j = 0, MAP_SIZE = outputMapList.length; j < MAP_SIZE; j++) {
+          var outputMap = outputMapList[j];
+          layout.outputMapList
+              .add(OutputMap(outputMap["global_key"], outputMap["input"]));
+        }
+
+        layoutRowList.add(layout);
       }
 
-      output.add(layout);
+      output.add(layoutRowList);
     }
-
     print("Parsed Layout Json Input ${output}");
+    return output;
   }
 
   @override
@@ -37,11 +48,11 @@ class Layout{
   }
 }
 
-class OutputMap{
-  String globalKey ;
+class OutputMap {
+  String globalKey;
   int input;
 
-  OutputMap(this.globalKey,this.input);
+  OutputMap(this.globalKey, this.input);
 
   @override
   String toString() {
@@ -49,16 +60,12 @@ class OutputMap{
   }
 }
 
-class L{
-  final A=0;
-}
-
-enum LogicGateType{
-  AND,
-  OR,
-  NOT,
-  NAND,
-  NOR,
-  EXOR,
-  EXNOR
+class LogicGateType {
+  static const AND = 1;
+  static const OR = 2;
+  static const NOT = 3;
+  static const NAND = 4;
+  static const NOR = 5;
+  static const EXOR = 6;
+  static const EXNOR = 7;
 }
