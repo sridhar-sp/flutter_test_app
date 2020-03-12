@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:test_web_app/component/and_gate.dart';
+import 'package:test_web_app/component/nand_gate.dart';
+import 'package:test_web_app/component/base_component_widgets.dart';
 import 'package:test_web_app/custom_canvas_painter.dart';
 import 'package:test_web_app/mock/mock_input.dart';
 import 'package:test_web_app/model/layout_model.dart';
@@ -53,10 +56,9 @@ class HomeWidget extends StatefulWidget {
 }
 
 class HomeWidgetState extends State<HomeWidget> {
-  GlobalKey<AndGateState> firstLevelAndGateKey = GlobalKey();
-  GlobalKey<AndGateState> secondLevelAndGateKey = GlobalKey();
+  Map<String, GlobalKey<BaseComponentState>> globalListCache = Map();
 
-  Map<String, GlobalKey<AndGateState>> globalListCache = Map();
+  GlobalKey<BaseComponentState> tempNandGateKey = GlobalKey();
 
   double startX = 0.0;
   double startY = 0.0;
@@ -67,31 +69,29 @@ class HomeWidgetState extends State<HomeWidget> {
   void initState() {
     super.initState();
 
-    Layout.fromJson(jsonInput);
-
 //    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {afterLayout();});
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      afterLayoutV2();
+    });
   }
 
-  void afterLayout() {
-    print("PostFrameCallback in HomeWidgetState ");
+  void afterLayoutV2() {
+    print("afterLayoutV2");
 
-    RenderBox firstAndGateRO =
-        firstLevelAndGateKey.currentContext.findRenderObject();
-    RenderBox secondAndGateRO =
-        secondLevelAndGateKey.currentContext.findRenderObject();
+    print("componentLocation ${tempNandGateKey.currentState.widget.componentLocationDetails}");
 
-    Offset firstGateOffset = firstAndGateRO.localToGlobal(Offset.zero);
-    Offset secondGateOffset = secondAndGateRO.localToGlobal(Offset.zero);
+    RenderBox tempNandGateRB = tempNandGateKey.currentContext.findRenderObject();
 
     setState(() {
-      startX = firstGateOffset.dx;
-      startY = firstGateOffset.dy;
-      endX = secondGateOffset.dx;
-      endY = secondGateOffset.dy;
-    });
+      ComponentLocationDetails details = tempNandGateKey.currentState.widget.componentLocationDetails;
 
-    print("firstAndGateRO size ${firstAndGateRO.size} Pos "
-        "${firstAndGateRO.localToGlobal(Offset.zero)}");
+      Offset nandGateOffset = tempNandGateRB.localToGlobal(Offset.zero);
+
+      startX = nandGateOffset.dx + details.inputOneLocation.x;
+      startY = nandGateOffset.dy + details.inputOneLocation.y;
+      endX = nandGateOffset.dx + details.inputTwoLocation.x;
+      endY = nandGateOffset.dy + details.inputTwoLocation.y;
+    });
   }
 
   Column constructLayoutFromJson() {
@@ -104,28 +104,29 @@ class HomeWidgetState extends State<HomeWidget> {
 
   Widget getRowForLayout(List<Layout> layoutRow) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 50),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: layoutRow.map((e) => getItemForLayout(e)).toList(),
-      )
-    );
+        padding: EdgeInsets.symmetric(vertical: 50),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: layoutRow.map((e) => getItemForLayout(e)).toList(),
+        ));
   }
 
   Widget getItemForLayout(Layout layout) {
     return Container(
       width: 150,
       height: 150,
-      child: getLogicGate(layout),
+      child: getComponent(layout),
     );
   }
 
-  Widget getLogicGate(Layout layout) {
-    GlobalKey<AndGateState> key = GlobalKey();
+  Widget getComponent(Layout layout) {
+    GlobalKey<BaseComponentState> key = GlobalKey();
     globalListCache[layout.globalKey] = key;
     switch (layout.gateType) {
       case LogicGateType.AND:
-        return AndGateWidget(key: key);
+        return AndGate(key);
+      case LogicGateType.NAND:
+        return NandGate(tempNandGateKey);
       default:
         throw AssertionError("Invalid gate type ${layout.gateType}");
     }

@@ -86,6 +86,14 @@ class NotGatePainter extends CustomPainter{
   }
 }
 
+class FooStatefulWidget extends StatefulWidget{
+  @override
+  State<StatefulWidget> createState() {
+    // TODO: implement createState
+    throw UnimplementedError();
+  }
+}
+
 class AndGateWidget extends StatefulWidget{
 
   AndGateWidget({Key key}):super(key:key);
@@ -100,6 +108,7 @@ class AndGateState extends State<AndGateWidget>{
 
   @override
   Widget build(BuildContext context) {
+
    return Container(
      padding: const EdgeInsets.all(2.0),
      child: CustomPaint(

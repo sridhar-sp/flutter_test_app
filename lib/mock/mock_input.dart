@@ -48,7 +48,7 @@ final String jsonInput = """
       },
       {
          "global_key":"ar_2_and",
-         "gate_type":1,
+         "gate_type":4,
          "output_map":[
             {
                "global_key":"sr_2_and",
