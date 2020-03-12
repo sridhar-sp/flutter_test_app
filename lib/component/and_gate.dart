@@ -3,7 +3,7 @@ import 'package:test_web_app/component/base_component_widgets.dart';
 import 'dart:math';
 
 class AndGate extends BaseComponentStatefulWidget {
-  AndGate(Key key) : super(key);
+  AndGate(Key key,String text) : super(key,text:text);
 
   @override
   State<BaseComponentStatefulWidget> createState() {
@@ -14,12 +14,12 @@ class AndGate extends BaseComponentStatefulWidget {
 class AndGateState extends BaseComponentState {
   @override
   BaseComponentPainter getPainter() {
-    return AndGatePainter(widget);
+    return AndGatePainter(this);
   }
 }
 
 class AndGatePainter extends BaseComponentPainter {
-  AndGatePainter(BaseComponentStatefulWidget widget) : super(widget);
+  AndGatePainter(BaseComponentState state) : super(state);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -51,8 +51,8 @@ class AndGatePainter extends BaseComponentPainter {
 
     canvas.drawPath(path, paint);
 
-    const legStartPadding = 20;
-    const legHeight = 50;
+    const legStartPadding = BaseComponentPainter.INPUT_LEG_START_PADDING;
+    const legHeight = BaseComponentPainter.INPUT_LEG_HEIGHT;
 
     // Input leg 1
     double inputOneLegX = padding + legStartPadding;
@@ -79,6 +79,8 @@ class AndGatePainter extends BaseComponentPainter {
 
     componentLocationDetails.outputLocation = Point(centerX, 0);
     canvas.drawPath(path, paint);
+
+    drawKey(canvas, size);
   }
 
   @override

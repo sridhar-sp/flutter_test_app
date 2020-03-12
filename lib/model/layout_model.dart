@@ -1,27 +1,26 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 
-class Layout {
+class Component {
   String globalKey;
   int gateType;
   List<OutputMap> outputMapList = List();
 
-  Layout(this.globalKey, this.gateType);
+  Component(this.globalKey, this.gateType);
 
-  static List<List<Layout>> fromJson(@required String json) {
-    List<List<Layout>> output = List();
+  static List<List<Component>> fromJson(String json) {
+    List<List<Component>> output = List();
 
     List<dynamic> jsonMap = jsonDecode(json);
-    for (int columnIndex = 0, COLUMN_SIZE = jsonMap.length; columnIndex < COLUMN_SIZE; columnIndex++) {
-      List<Layout> layoutRowList = List();
+    for (int columnIndex = 0, columnSize = jsonMap.length; columnIndex < columnSize; columnIndex++) {
+      List<Component> layoutRowList = List();
 
       List<dynamic> rowLayoutList = jsonMap[columnIndex];
-      for (int rowIndex = 0, ROW_SIZE = rowLayoutList.length; rowIndex < ROW_SIZE; rowIndex++) {
+      for (int rowIndex = 0, rowSize = rowLayoutList.length; rowIndex < rowSize; rowIndex++) {
         var currentItem = jsonMap[columnIndex][rowIndex];
-        Layout layout = Layout(currentItem["global_key"], currentItem["gate_type"]);
+        Component layout = Component(currentItem["global_key"], currentItem["gate_type"]);
 
         List<dynamic> outputMapList = currentItem["output_map"];
-        for (int j = 0, MAP_SIZE = outputMapList.length; j < MAP_SIZE; j++) {
+        for (int j = 0, mapSize = outputMapList.length; j < mapSize; j++) {
           var outputMap = outputMapList[j];
           layout.outputMapList.add(OutputMap(outputMap["global_key"], outputMap["input"]));
         }

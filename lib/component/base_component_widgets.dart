@@ -4,21 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 abstract class BaseComponentStatefulWidget extends StatefulWidget {
-  ComponentLocationDetails _componentLocationDetails = ComponentLocationDetails();
 
-  BaseComponentStatefulWidget(Key key) : super(key: key);
+  final String text;
+  BaseComponentStatefulWidget(Key key,{this.text=""}) : super(key: key);
 
   @override
   State<BaseComponentStatefulWidget> createState();
 
-  ComponentLocationDetails get componentLocationDetails => _componentLocationDetails;
-
-  set componentLocationDetails(ComponentLocationDetails componentLocationDetails) {
-    this._componentLocationDetails = componentLocationDetails;
-  }
 }
 
 abstract class BaseComponentState extends State<BaseComponentStatefulWidget> {
+
+  ComponentLocationDetails _componentLocationDetails = ComponentLocationDetails();
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -29,19 +27,38 @@ abstract class BaseComponentState extends State<BaseComponentStatefulWidget> {
     );
   }
 
+  ComponentLocationDetails get componentLocationDetails => _componentLocationDetails;
+
+  set componentLocationDetails(ComponentLocationDetails componentLocationDetails) {
+    this._componentLocationDetails = componentLocationDetails;
+  }
+
   BaseComponentPainter getPainter();
 }
 
 abstract class BaseComponentPainter extends CustomPainter {
+
   static const PADDING = 10.0;
+  static const INPUT_LEG_HEIGHT = 50;
+  static const INPUT_LEG_START_PADDING = 20;
 
-  BaseComponentStatefulWidget _widget;
+  BaseComponentState _state;
 
-  BaseComponentPainter(BaseComponentStatefulWidget _widget) {
-    this._widget = _widget;
+  BaseComponentPainter(BaseComponentState _widget) {
+    this._state = _widget;
   }
 
-  ComponentLocationDetails get componentLocationDetails => _widget.componentLocationDetails;
+  void drawKey(Canvas canvas,Size size){
+
+    TextPainter textPainter = TextPainter();
+
+    textPainter.text = TextSpan(text: _state.widget.text,style: TextStyle(color: Colors.red));
+    textPainter.textDirection=TextDirection.ltr;
+    textPainter.layout();
+    textPainter.paint(canvas, Offset(size.width/2 - textPainter.size.width/2,size.height/2));
+  }
+
+  ComponentLocationDetails get componentLocationDetails => _state.componentLocationDetails;
 
   Paint getCommonPaint() {
     return Paint()
