@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:test_web_app/component/and_gate.dart';
 import 'package:test_web_app/component/base_component_widgets.dart';
 import 'dart:math';
 
 class NandGate extends BaseComponentStatefulWidget {
-  NandGate(Key key) : super(key);
+  NandGate(Key key,String text) : super(key,text:text);
 
   @override
   State<BaseComponentStatefulWidget> createState() {
@@ -15,12 +14,12 @@ class NandGate extends BaseComponentStatefulWidget {
 class NandGateState extends BaseComponentState {
   @override
   BaseComponentPainter getPainter() {
-    return NandGatePainter(widget);
+    return NandGatePainter(this);
   }
 }
 
 class NandGatePainter extends BaseComponentPainter {
-  NandGatePainter(BaseComponentStatefulWidget widget) : super(widget);
+  NandGatePainter(NandGateState state) : super(state);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -80,6 +79,8 @@ class NandGatePainter extends BaseComponentPainter {
     canvas.drawCircle(Offset(centerX, padding - outputBubbleRadius), outputBubbleRadius, getCommonPaint());
 
     componentLocationDetails.outputLocation = Point(centerX, padding - outputBubbleRadius);
+
+    drawKey(canvas, size);
   }
 
   @override

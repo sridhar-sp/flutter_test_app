@@ -1,11 +1,14 @@
+import 'dart:html';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:test_web_app/component/and_gate.dart';
 import 'package:test_web_app/component/nand_gate.dart';
 import 'package:test_web_app/component/base_component_widgets.dart';
+import 'package:test_web_app/component/pcb_layout.dart';
 import 'package:test_web_app/custom_canvas_painter.dart';
 import 'package:test_web_app/mock/mock_input.dart';
 import 'package:test_web_app/model/layout_model.dart';
-import 'package:test_web_app/views.dart';
 
 void main() => runApp(MyApp());
 
@@ -32,33 +35,19 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
 class HomeWidget extends StatefulWidget {
   @override
   HomeWidgetState createState() => HomeWidgetState();
 }
 
 class HomeWidgetState extends State<HomeWidget> {
+  List<List<Component>> _layoutList;
+
   Map<String, GlobalKey<BaseComponentState>> globalListCache = Map();
 
   GlobalKey<BaseComponentState> tempNandGateKey = GlobalKey();
+
+  List<PointPair> pcbLayoutConnectionsPairList = List();
 
   double startX = 0.0;
   double startY = 0.0;
@@ -69,66 +58,59 @@ class HomeWidgetState extends State<HomeWidget> {
   void initState() {
     super.initState();
 
-//    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {afterLayout();});
+    _layoutList = Component.fromJson(jsonInput);
+
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      afterLayoutV2();
+      drawCircuitConnections();
+    });
+  }
+  
+  void drawCircuitConnections() {
+    print("++++++== globalListCache == $globalListCache");
+
+    List<PointPair> connectionsPointPairList = List();
+
+    _layoutList.forEach((componentsInRow) {
+      componentsInRow.forEach((component) {
+        GlobalKey<BaseComponentState> outputComponentKey = globalListCache[component.globalKey];
+
+        List<OutputMap> outputMapList = component.outputMapList;
+        outputMapList.forEach((element) {
+          print(
+              "${component.globalKey} output should connect to the input pin ${element.input} of ${element.globalKey} ");
+
+          //Todo   validate the global key present in the cache or not.
+          GlobalKey<BaseComponentState> inputComponentKey = globalListCache[element.globalKey];
+
+          connectionsPointPairList.add(PointPair(findPinLocation(outputComponentKey, false),
+              findPinLocation(inputComponentKey, true, inputPinIndex: element.input)));
+        });
+
+        setState(() {
+          pcbLayoutConnectionsPairList = connectionsPointPairList;
+        });
+      });
     });
   }
 
-  void afterLayoutV2() {
-    print("afterLayoutV2");
+  Point findPinLocation(GlobalKey<BaseComponentState> key, bool isInput, {int inputPinIndex}) {
+    ComponentLocationDetails locationDetails = key.currentState.componentLocationDetails;
 
-    print("componentLocation ${tempNandGateKey.currentState.widget.componentLocationDetails}");
+    RenderBox renderBox = key.currentContext.findRenderObject();
+    Offset componentOffset = renderBox.localToGlobal(Offset.zero);
 
-    RenderBox tempNandGateRB = tempNandGateKey.currentContext.findRenderObject();
-
-    setState(() {
-      ComponentLocationDetails details = tempNandGateKey.currentState.widget.componentLocationDetails;
-
-      Offset nandGateOffset = tempNandGateRB.localToGlobal(Offset.zero);
-
-      startX = nandGateOffset.dx + details.inputOneLocation.x;
-      startY = nandGateOffset.dy + details.inputOneLocation.y;
-      endX = nandGateOffset.dx + details.inputTwoLocation.x;
-      endY = nandGateOffset.dy + details.inputTwoLocation.y;
-    });
-  }
-
-  Column constructLayoutFromJson() {
-    List<List<Layout>> layoutList = Layout.fromJson(jsonInput);
-    return Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: layoutList.map((e) => getRowForLayout(e)).toList());
-  }
-
-  Widget getRowForLayout(List<Layout> layoutRow) {
-    return Container(
-        padding: EdgeInsets.symmetric(vertical: 50),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: layoutRow.map((e) => getItemForLayout(e)).toList(),
-        ));
-  }
-
-  Widget getItemForLayout(Layout layout) {
-    return Container(
-      width: 150,
-      height: 150,
-      child: getComponent(layout),
-    );
-  }
-
-  Widget getComponent(Layout layout) {
-    GlobalKey<BaseComponentState> key = GlobalKey();
-    globalListCache[layout.globalKey] = key;
-    switch (layout.gateType) {
-      case LogicGateType.AND:
-        return AndGate(key);
-      case LogicGateType.NAND:
-        return NandGate(tempNandGateKey);
-      default:
-        throw AssertionError("Invalid gate type ${layout.gateType}");
+    if (isInput) {
+      if (inputPinIndex == 1) {
+        return Point(componentOffset.dx + locationDetails.inputOneLocation.x,
+            componentOffset.dy + locationDetails.inputOneLocation.y);
+      } else if (inputPinIndex == 2) {
+        return Point(componentOffset.dx + locationDetails.inputTwoLocation.x,
+            componentOffset.dy + locationDetails.inputTwoLocation.y);
+      } else
+        throw ArgumentError("Invalid input pin index");
+    } else {
+      return Point(
+          componentOffset.dx + locationDetails.outputLocation.x, componentOffset.dy + locationDetails.outputLocation.y);
     }
   }
 
@@ -138,129 +120,51 @@ class HomeWidgetState extends State<HomeWidget> {
       body: Center(
         child: Stack(
           children: <Widget>[
-            Lines(),
             PCBLayoutWidget(startX, startY, endX, endY),
+            PCBLayout(pcbLayoutConnectionsPairList),
             Container(
               child: constructLayoutFromJson(),
-//              child: Column(
-//                mainAxisAlignment: MainAxisAlignment.end,
-//                crossAxisAlignment: CrossAxisAlignment.center,
-//                children: <Widget>[
-//                  Row(
-//                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//                    children: <Widget>[
-//                      LogicGate("AND"),
-//                      Container(
-//                        width: 150,
-//                        height: 150,
-//                        child: AndGateWidget(
-//                          key: secondLevelAndGateKey,
-//                        ),
-//                      ),
-//                      Container(
-//                          width: 150,
-//                          height: 150,
-//                          child: NotGateWidget(
-//                            key: ValueKey("3"),
-//                          )),
-//                    ],
-//                  ),
-//                  SizedBox(
-//                    height: 56,
-//                  ),
-//                  Row(
-//                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//                    children: <Widget>[
-//                      Container(
-//                        width: 150,
-//                        height: 150,
-//                        child: AndGateWidget(key: firstLevelAndGateKey),
-//                      ),
-//                      Container(
-//                          width: 150,
-//                          height: 150,
-//                          child: NotGateWidget(
-//                            key: ValueKey("1"),
-//                          )),
-//                    ],
-//                  ),
-//                ],
-//              ),
             ),
           ],
         ),
       ),
     );
   }
-}
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  Column constructLayoutFromJson() {
+    return Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: _layoutList.map((e) => getRowForLayout(e)).toList());
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            NotGateWidget(),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+  Widget getRowForLayout(List<Component> layoutRow) {
+    return Container(
+        padding: EdgeInsets.symmetric(vertical: 50),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: layoutRow.map((e) => getItemForLayout(e)).toList(),
+        ));
+  }
+
+  Widget getItemForLayout(Component layout) {
+    return Container(
+      width: 150,
+      height: 150,
+      child: getComponent(layout),
     );
+  }
+
+  Widget getComponent(Component layout) {
+    GlobalKey<BaseComponentState> key = GlobalKey();
+    globalListCache[layout.globalKey] = key;
+    switch (layout.gateType) {
+      case LogicGateType.AND:
+        return AndGate(key, layout.globalKey);
+      case LogicGateType.NAND:
+        return NandGate(key, layout.globalKey);
+      default:
+        throw AssertionError("Invalid gate type ${layout.gateType}");
+    }
   }
 }
