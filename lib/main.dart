@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:test_web_app/component/and_gate.dart';
 import 'package:test_web_app/component/nand_gate.dart';
 import 'package:test_web_app/component/base_component_widgets.dart';
-import 'package:test_web_app/component/pcb_layout.dart';
+import 'package:test_web_app/layout/pcb_layout.dart';
 import 'package:test_web_app/mock/mock_input.dart';
 import 'package:test_web_app/model/layout_model.dart';
 
@@ -30,7 +30,6 @@ class HomeWidget extends StatefulWidget {
 }
 
 class HomeWidgetState extends State<HomeWidget> {
-
   List<List<Component>> _layoutComponentList;
 
   Map<String, GlobalKey<BaseComponentState>> _globalListCache = Map();
@@ -47,7 +46,7 @@ class HomeWidgetState extends State<HomeWidget> {
       drawCircuitConnections();
     });
   }
-  
+
   void drawCircuitConnections() {
     print("++++++== globalListCache == $_globalListCache");
 
@@ -58,16 +57,15 @@ class HomeWidgetState extends State<HomeWidget> {
         GlobalKey<BaseComponentState> outputComponentKey = _globalListCache[component.globalKey];
 
         List<OutputMap> outputMapList = component.outputMapList;
-        outputMapList.forEach((element) {
-
+        outputMapList.forEach((outputMappingDetails) {
           print(
-              "${component.globalKey} output should connect to the input pin ${element.input} of ${element.globalKey} ");
+              "${component.globalKey} output should connect to the input pin ${outputMappingDetails.input} of ${outputMappingDetails.globalKey} ");
 
           //Todo   validate the global key present in the cache or not.
-          GlobalKey<BaseComponentState> inputComponentKey = _globalListCache[element.globalKey];
+          GlobalKey<BaseComponentState> inputComponentKey = _globalListCache[outputMappingDetails.globalKey];
 
           connectionsPointPairList.add(PointPair(findPinLocation(outputComponentKey, false),
-              findPinLocation(inputComponentKey, true, inputPinIndex: element.input)));
+              findPinLocation(inputComponentKey, true, inputPinIndex: outputMappingDetails.input)));
         });
 
         setState(() {
@@ -78,21 +76,16 @@ class HomeWidgetState extends State<HomeWidget> {
   }
 
   Point findPinLocation(GlobalKey<BaseComponentState> key, bool isInput, {int inputPinIndex}) {
-
     ComponentLocationDetails locationDetails = key.currentState.componentLocationDetails;
 
     RenderBox renderBox = key.currentContext.findRenderObject();
     Offset componentOffset = renderBox.localToGlobal(Offset.zero);
 
     if (isInput) {
-      if (inputPinIndex == 1) {
-        return Point(componentOffset.dx + locationDetails.inputOneLocation.x,
-            componentOffset.dy + locationDetails.inputOneLocation.y);
-      } else if (inputPinIndex == 2) {
-        return Point(componentOffset.dx + locationDetails.inputTwoLocation.x,
-            componentOffset.dy + locationDetails.inputTwoLocation.y);
-      } else
-        throw ArgumentError("Invalid input pin index");
+      inputPinIndex+=-1;/// {@link locationDetails#inputLocation} is zero based index.
+      if (inputPinIndex >= locationDetails.inputLocation.length) throw ArgumentError("Invalid input pin index");
+      return Point(componentOffset.dx + locationDetails.inputLocation[inputPinIndex].x,
+          componentOffset.dy + locationDetails.inputLocation[inputPinIndex].y);
     } else {
       return Point(
           componentOffset.dx + locationDetails.outputLocation.x, componentOffset.dy + locationDetails.outputLocation.y);
@@ -105,9 +98,15 @@ class HomeWidgetState extends State<HomeWidget> {
       body: Center(
         child: Stack(
           children: <Widget>[
+            RaisedButton(
+              child: Text("HI"),
+            ),
             PCBLayout(_pcbLayoutConnectionsPairList),
-            Container(
-              child: constructLayoutFromJson(),
+            Padding(
+              padding: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 50),
+              child: Container(
+                child: constructLayoutFromJson(),
+              ),
             ),
           ],
         ),

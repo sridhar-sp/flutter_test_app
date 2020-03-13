@@ -60,7 +60,9 @@ class AndGatePainter extends BaseComponentPainter {
     path.moveTo(inputOneLegX, centerY);
     path.lineTo(inputOneLegX, inputOneLegY);
 
-    componentLocationDetails.inputOneLocation = Point(inputOneLegX, inputOneLegY);
+    List<Point> inputLocationDetails = List(2);
+
+    inputLocationDetails[0]=Point(inputOneLegX, inputOneLegY);
 
     canvas.drawPath(path, paint);
 
@@ -70,7 +72,9 @@ class AndGatePainter extends BaseComponentPainter {
     path.moveTo(inputTwoLegX, centerY);
     path.lineTo(inputTwoLegX, inputTwoLegY);
 
-    componentLocationDetails.inputTwoLocation = Point(inputTwoLegX, inputTwoLegY);
+    inputLocationDetails[1]=Point(inputTwoLegX, inputTwoLegY);
+
+    componentLocationDetails.inputLocation=inputLocationDetails;
 
     canvas.drawPath(path, paint);
 

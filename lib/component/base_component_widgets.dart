@@ -4,17 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 abstract class BaseComponentStatefulWidget extends StatefulWidget {
-
   final String text;
-  BaseComponentStatefulWidget(Key key,{this.text=""}) : super(key: key);
+  BaseComponentStatefulWidget(Key key, {this.text = ""}) : super(key: key);
 
   @override
   State<BaseComponentStatefulWidget> createState();
-
 }
 
 abstract class BaseComponentState extends State<BaseComponentStatefulWidget> {
-
   ComponentLocationDetails _componentLocationDetails = ComponentLocationDetails();
 
   @override
@@ -37,7 +34,6 @@ abstract class BaseComponentState extends State<BaseComponentStatefulWidget> {
 }
 
 abstract class BaseComponentPainter extends CustomPainter {
-
   static const PADDING = 10.0;
   static const INPUT_LEG_HEIGHT = 50;
   static const INPUT_LEG_START_PADDING = 20;
@@ -48,14 +44,13 @@ abstract class BaseComponentPainter extends CustomPainter {
     this._state = _widget;
   }
 
-  void drawKey(Canvas canvas,Size size){
-
+  void drawKey(Canvas canvas, Size size) {
     TextPainter textPainter = TextPainter();
 
-    textPainter.text = TextSpan(text: _state.widget.text,style: TextStyle(color: Colors.red));
-    textPainter.textDirection=TextDirection.ltr;
+    textPainter.text = TextSpan(text: _state.widget.text, style: TextStyle(color: Colors.red));
+    textPainter.textDirection = TextDirection.ltr;
     textPainter.layout();
-    textPainter.paint(canvas, Offset(size.width/2 - textPainter.size.width/2,size.height/2));
+    textPainter.paint(canvas, Offset(size.width / 2 - textPainter.size.width / 2, size.height / 2));
   }
 
   ComponentLocationDetails get componentLocationDetails => _state.componentLocationDetails;
@@ -69,24 +64,17 @@ abstract class BaseComponentPainter extends CustomPainter {
 }
 
 class ComponentLocationDetails {
-  Point _inputOneLocation;
 
-  Point _inputTwoLocation;
+  List<Point> _inputLocation;
 
   Point _outputLocation;
 
-  Point get inputOneLocation => _inputOneLocation;
-
-  Point get inputTwoLocation => _inputTwoLocation;
+  List<Point> get inputLocation => _inputLocation;
 
   Point get outputLocation => _outputLocation;
 
-  set inputOneLocation(Point inputOneLocation) {
-    this._inputOneLocation = inputOneLocation;
-  }
-
-  set inputTwoLocation(Point inputTwoLocation) {
-    this._inputTwoLocation = inputTwoLocation;
+  set inputLocation(List<Point> inputLocation) {
+    this._inputLocation = inputLocation;
   }
 
   set outputLocation(Point outputLocation) {
@@ -95,6 +83,6 @@ class ComponentLocationDetails {
 
   @override
   String toString() {
-    return "\n Input-1 $inputOneLocation\nInput 2 $inputTwoLocation\nOutput $outputLocation";
+    return "\n Input $inputLocation\nOutput $outputLocation";
   }
 }
