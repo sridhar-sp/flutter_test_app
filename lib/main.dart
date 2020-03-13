@@ -1,10 +1,13 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:test_web_app/component/and_gate.dart';
 import 'package:test_web_app/component/nand_gate.dart';
 import 'package:test_web_app/component/base_component_widgets.dart';
+import 'package:test_web_app/component/push_latch_switch.dart';
 import 'package:test_web_app/layout/pcb_layout.dart';
+import 'package:test_web_app/layout/switch_layout.dart';
 import 'package:test_web_app/mock/mock_input.dart';
 import 'package:test_web_app/model/layout_model.dart';
 
@@ -30,29 +33,32 @@ class HomeWidget extends StatefulWidget {
 }
 
 class HomeWidgetState extends State<HomeWidget> {
-  List<List<Component>> _layoutComponentList;
+  Input _input;
 
   Map<String, GlobalKey<BaseComponentState>> _globalListCache = Map();
 
   List<PointPair> _pcbLayoutConnectionsPairList = List();
 
+  List<SwitchInfo> _switchInfoList = List();
+
   @override
   void initState() {
     super.initState();
 
-    _layoutComponentList = Component.fromJson(jsonInput);
+    _input = toInput(jsonInput);
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       drawCircuitConnections();
     });
   }
 
+
   void drawCircuitConnections() {
     print("++++++== globalListCache == $_globalListCache");
 
     List<PointPair> connectionsPointPairList = List();
 
-    _layoutComponentList.forEach((componentsInRow) {
+    _input.logicGates.forEach((componentsInRow) {
       componentsInRow.forEach((component) {
         GlobalKey<BaseComponentState> outputComponentKey = _globalListCache[component.globalKey];
 
@@ -70,6 +76,11 @@ class HomeWidgetState extends State<HomeWidget> {
 
         setState(() {
           _pcbLayoutConnectionsPairList = connectionsPointPairList;
+
+          _switchInfoList.add(SwitchInfo(Point(10, 10),GlobalKey()));
+//          _switchInfoList.add(SwitchInfo(Point(100, 100),GlobalKey()));
+//          _switchInfoList.add(SwitchInfo(Point(200, 200),GlobalKey()));
+
         });
       });
     });
@@ -82,7 +93,9 @@ class HomeWidgetState extends State<HomeWidget> {
     Offset componentOffset = renderBox.localToGlobal(Offset.zero);
 
     if (isInput) {
-      inputPinIndex+=-1;/// {@link locationDetails#inputLocation} is zero based index.
+      inputPinIndex += -1;
+
+      /// {@link locationDetails#inputLocation} is zero based index.
       if (inputPinIndex >= locationDetails.inputLocation.length) throw ArgumentError("Invalid input pin index");
       return Point(componentOffset.dx + locationDetails.inputLocation[inputPinIndex].x,
           componentOffset.dy + locationDetails.inputLocation[inputPinIndex].y);
@@ -98,9 +111,7 @@ class HomeWidgetState extends State<HomeWidget> {
       body: Center(
         child: Stack(
           children: <Widget>[
-            RaisedButton(
-              child: Text("HI"),
-            ),
+            SwitchLayout(_switchInfoList),
             PCBLayout(_pcbLayoutConnectionsPairList),
             Padding(
               padding: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 50),
@@ -118,10 +129,10 @@ class HomeWidgetState extends State<HomeWidget> {
     return Column(
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.center,
-        children: _layoutComponentList.map((e) => getRowForLayout(e)).toList());
+        children: _input.logicGates.map((e) => getRowForLayout(e)).toList());
   }
 
-  Widget getRowForLayout(List<Component> layoutRow) {
+  Widget getRowForLayout(List<LogicGate> layoutRow) {
     return Container(
         padding: EdgeInsets.symmetric(vertical: 50),
         child: Row(
@@ -130,7 +141,7 @@ class HomeWidgetState extends State<HomeWidget> {
         ));
   }
 
-  Widget getItemForLayout(Component layout) {
+  Widget getItemForLayout(LogicGate layout) {
     return Container(
       width: 150,
       height: 150,
@@ -138,7 +149,7 @@ class HomeWidgetState extends State<HomeWidget> {
     );
   }
 
-  Widget getComponent(Component layout) {
+  Widget getComponent(LogicGate layout) {
     GlobalKey<BaseComponentState> key = GlobalKey();
     _globalListCache[layout.globalKey] = key;
     switch (layout.gateType) {

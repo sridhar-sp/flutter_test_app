@@ -40,8 +40,8 @@ abstract class BaseComponentPainter extends CustomPainter {
 
   BaseComponentState _state;
 
-  BaseComponentPainter(BaseComponentState _widget) {
-    this._state = _widget;
+  BaseComponentPainter(BaseComponentState state) {
+    this._state = state;
   }
 
   void drawKey(Canvas canvas, Size size) {

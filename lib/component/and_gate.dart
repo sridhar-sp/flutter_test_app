@@ -7,19 +7,19 @@ class AndGate extends BaseComponentStatefulWidget {
 
   @override
   State<BaseComponentStatefulWidget> createState() {
-    return AndGateState();
+    return _AndGateState();
   }
 }
 
-class AndGateState extends BaseComponentState {
+class _AndGateState extends BaseComponentState {
   @override
   BaseComponentPainter getPainter() {
-    return AndGatePainter(this);
+    return _AndGatePainter(this);
   }
 }
 
-class AndGatePainter extends BaseComponentPainter {
-  AndGatePainter(BaseComponentState state) : super(state);
+class _AndGatePainter extends BaseComponentPainter {
+  _AndGatePainter(BaseComponentState state) : super(state);
 
   @override
   void paint(Canvas canvas, Size size) {

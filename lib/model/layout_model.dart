@@ -1,42 +1,51 @@
 import 'dart:convert';
 
-class Component {
+const KEY_LOGIC_GATE_DETAILS = "logic_gate_details";
+const KEY_GLOBAL_KEY = "global_key";
+const KEY_GATE_TYPE = "gate_type";
+const KEY_OUTPUT_MAP = "output_map";
+const KEY_INPUT_PIN = "input_pin";
+const KEY_SWITCH_DETAILS = "switch_details";
+
+class Input {
+  List<List<LogicGate>> _logicGates;
+
+  List<Switch> _switchDetails;
+
+  Input(this._logicGates, this._switchDetails);
+
+  List<List<LogicGate>> get logicGates => _logicGates;
+
+  List<Switch> get switchDetails => _switchDetails;
+
+  @override
+  String toString() {
+    return "LogicGates $_logicGates SwitchDetails $_switchDetails";
+  }
+}
+
+class LogicGate {
   String globalKey;
   int gateType;
   List<OutputMap> outputMapList = List();
 
-  Component(this.globalKey, this.gateType);
-
-  static List<List<Component>> fromJson(String json) {
-    List<List<Component>> output = List();
-
-    List<dynamic> jsonMap = jsonDecode(json);
-    for (int columnIndex = 0, columnSize = jsonMap.length; columnIndex < columnSize; columnIndex++) {
-      List<Component> layoutRowList = List();
-
-      List<dynamic> rowLayoutList = jsonMap[columnIndex];
-      for (int rowIndex = 0, rowSize = rowLayoutList.length; rowIndex < rowSize; rowIndex++) {
-        var currentItem = jsonMap[columnIndex][rowIndex];
-        Component layout = Component(currentItem["global_key"], currentItem["gate_type"]);
-
-        List<dynamic> outputMapList = currentItem["output_map"];
-        for (int j = 0, mapSize = outputMapList.length; j < mapSize; j++) {
-          var outputMap = outputMapList[j];
-          layout.outputMapList.add(OutputMap(outputMap["global_key"], outputMap["input"]));
-        }
-
-        layoutRowList.add(layout);
-      }
-
-      output.add(layoutRowList);
-    }
-//    print("Parsed Layout Json Input ${output}");
-    return output;
-  }
+  LogicGate(this.globalKey, this.gateType);
 
   @override
   String toString() {
-    return "\nglobalKey = $globalKey\ngateType = $gateType\noutputMap $outputMapList";
+    return "globalKey = $globalKey gateType = $gateType outputMap $outputMapList";
+  }
+}
+
+class Switch {
+  String globalKey;
+  OutputMap outputMap;
+
+  Switch(this.globalKey, this.outputMap);
+
+  @override
+  String toString() {
+    return "globalKey = $globalKey OutputMap = $outputMap ";
   }
 }
 
@@ -60,4 +69,46 @@ class LogicGateType {
   static const NOR = 5;
   static const EXOR = 6;
   static const EXNOR = 7;
+}
+
+Input toInput(String json) {
+  List<List<LogicGate>> _logicGates = List();
+
+  List<Switch> _switchDetails = List();
+
+  var jsonDecodedInput = jsonDecode(json);
+
+  ///Parsing Logic gates details.
+  _logicGates = List();
+
+  List<dynamic> gatesDetails = jsonDecodedInput[KEY_LOGIC_GATE_DETAILS];
+  for (int columnIndex = 0, columnSize = gatesDetails.length; columnIndex < columnSize; columnIndex++) {
+    List<LogicGate> layoutRowList = List();
+
+    List<dynamic> rowLayoutList = gatesDetails[columnIndex];
+    for (int rowIndex = 0, rowSize = rowLayoutList.length; rowIndex < rowSize; rowIndex++) {
+      var currentItem = gatesDetails[columnIndex][rowIndex];
+      LogicGate component = LogicGate(currentItem[KEY_GLOBAL_KEY], currentItem[KEY_GATE_TYPE]);
+
+      List<dynamic> outputMapList = currentItem[KEY_OUTPUT_MAP];
+      for (int j = 0, mapSize = outputMapList.length; j < mapSize; j++) {
+        var outputMap = outputMapList[j];
+        component.outputMapList.add(OutputMap(outputMap[KEY_GLOBAL_KEY], outputMap[KEY_INPUT_PIN]));
+      }
+
+      layoutRowList.add(component);
+    }
+    _logicGates.add(layoutRowList);
+  }
+
+  ///Parsing switch details
+  List<dynamic> switchDetails = jsonDecodedInput[KEY_SWITCH_DETAILS];
+  _switchDetails = List();
+
+  switchDetails.forEach((switchElement) {
+    _switchDetails.add(Switch(switchElement[KEY_GLOBAL_KEY],
+        OutputMap(switchElement[KEY_OUTPUT_MAP][KEY_GLOBAL_KEY], switchElement[KEY_OUTPUT_MAP][KEY_INPUT_PIN])));
+  });
+
+  return Input(_logicGates, _switchDetails);
 }

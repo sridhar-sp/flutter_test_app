@@ -7,19 +7,19 @@ class NandGate extends BaseComponentStatefulWidget {
 
   @override
   State<BaseComponentStatefulWidget> createState() {
-    return NandGateState();
+    return _NandGateState();
   }
 }
 
-class NandGateState extends BaseComponentState {
+class _NandGateState extends BaseComponentState {
   @override
   BaseComponentPainter getPainter() {
-    return NandGatePainter(this);
+    return _NandGatePainter(this);
   }
 }
 
-class NandGatePainter extends BaseComponentPainter {
-  NandGatePainter(NandGateState state) : super(state);
+class _NandGatePainter extends BaseComponentPainter {
+  _NandGatePainter(_NandGateState state) : super(state);
 
   @override
   void paint(Canvas canvas, Size size) {

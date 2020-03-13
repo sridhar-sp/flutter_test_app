@@ -10,15 +10,15 @@ class PCBLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       child: CustomPaint(
-        painter: PCBLayoutPainter(pointsList),
+        painter: _PCBLayoutPainter(pointsList),
       ),
     );
   }
 }
 
-class PCBLayoutPainter extends CustomPainter {
+class _PCBLayoutPainter extends CustomPainter {
   final List<PointPair> pointsList;
-  PCBLayoutPainter(this.pointsList);
+  _PCBLayoutPainter(this.pointsList);
 
   @override
   void paint(Canvas canvas, Size size) {
