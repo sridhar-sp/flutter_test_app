@@ -1,14 +1,12 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/src/foundation/key.dart';
-import 'package:flutter/src/widgets/framework.dart';
 
 class PushLatchSwitch extends StatefulWidget{
 
-	bool isPressed;
+	final bool isPressed;
 
-	final Function(bool value) _callback;
+	final Function(GlobalKey<PushLatchState> key,bool value) _callback;
 
 	final Point _inputPoint;
 
@@ -16,18 +14,17 @@ class PushLatchSwitch extends StatefulWidget{
 
   @override
   State<PushLatchSwitch> createState() {
-  	print("PushLathcSwitch createState() ${key}");
+  	print("PushLathcSwitch createState() $key");
     return PushLatchState();
   }
 }
 
 class PushLatchState extends State<PushLatchSwitch>{
-
+bool a ;
 	@override
   Widget build(BuildContext context) {
 		print("PushLatchState build() ${widget.key}");
 		return Container(
-			padding: EdgeInsets.all(2.0),
 			child: GestureDetector(
 				child: CustomPaint(
 					painter: _PushLatchPainter(widget),
@@ -37,10 +34,7 @@ class PushLatchState extends State<PushLatchSwitch>{
 					),
 				),
 				onTap: (){
-					print("PushLatchState onTap() ${widget.key}");
-					setState(() {
-						widget.isPressed = !widget.isPressed;
-					});
+					widget._callback(widget.key,widget.isPressed);
 				},
 			),
 		);

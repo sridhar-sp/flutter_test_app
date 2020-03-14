@@ -4,13 +4,10 @@ import 'package:flutter/widgets.dart';
 import 'package:test_web_app/component/push_latch_switch.dart';
 
 class SwitchLayout extends StatefulWidget {
+  static const SWITCH_WIDTH = 55.0;
+  static const SWITCH_HEIGHT = 55.0;
 
-	static const SWITCH_WIDTH = 55.0;
-	static const SWITCH_HEIGHT = 55.0;
-
-  bool switchState = false;
-
-  List<SwitchInfo> _swithInfo;
+  final List<SwitchInfo> _swithInfo;
 
   SwitchLayout(this._swithInfo);
 
@@ -21,6 +18,8 @@ class SwitchLayout extends StatefulWidget {
 }
 
 class _SwitchLayoutState extends State<SwitchLayout> {
+  Map<String, bool> switchStateMap = Map();
+
   _SwitchLayoutDelegate _switchLayoutDelegate;
 
   @override
@@ -33,7 +32,15 @@ class _SwitchLayoutState extends State<SwitchLayout> {
   Widget build(BuildContext context) {
     return CustomMultiChildLayout(
       delegate: _switchLayoutDelegate,
-      children: widget._swithInfo.map((switchInfo) => toSwitch(switchInfo)).toList(),
+      children: widget._swithInfo
+          .map((switchInfo) =>
+              toSwitch(switchInfo, switchStateMap.containsKey(switchInfo.id) && switchStateMap[switchInfo.id],
+                  (GlobalKey<PushLatchState> key, bool value) {
+                setState(() {
+                  switchStateMap[switchInfo.id] = !value;
+                });
+              }))
+          .toList(),
     );
   }
 }
@@ -47,8 +54,8 @@ class _SwitchLayoutDelegate extends MultiChildLayoutDelegate {
   void performLayout(Size size) {
     _swithInfoList.forEach((switchInfo) {
       layoutChild(switchInfo.id, BoxConstraints.tight(Size(SwitchLayout.SWITCH_WIDTH, SwitchLayout.SWITCH_HEIGHT)));
-      positionChild(switchInfo.id, Offset(switchInfo.inputPinLocation.x-(SwitchLayout.SWITCH_WIDTH/2),
-		      switchInfo.inputPinLocation.y));
+      positionChild(switchInfo.id,
+          Offset(switchInfo.inputPinLocation.x - (SwitchLayout.SWITCH_WIDTH / 2), switchInfo.inputPinLocation.y));
     });
   }
 
@@ -58,13 +65,12 @@ class _SwitchLayoutDelegate extends MultiChildLayoutDelegate {
   }
 }
 
-Widget toSwitch(SwitchInfo switchInfo) {
+Widget toSwitch(SwitchInfo switchInfo, bool isPressed, Function(GlobalKey<PushLatchState> key, bool value) callback) {
   print("toSwitch ${switchInfo.toString()}");
+
   return LayoutId(
     id: switchInfo.id,
-    child: PushLatchSwitch(switchInfo.globalKey, false, switchInfo.inputPinLocation, (bool value) {
-      print("calback $value");
-    }),
+    child: PushLatchSwitch(switchInfo.globalKey, isPressed, switchInfo.inputPinLocation, callback),
   );
 }
 

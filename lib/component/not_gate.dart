@@ -5,7 +5,6 @@ class NotGate extends StatelessWidget{
 
 	@override
   StatelessElement createElement() {
-		StatelessElement statelessElement;
     return super.createElement();
   }
 	@override
