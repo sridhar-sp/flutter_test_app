@@ -32,7 +32,9 @@ class PushLatchState extends State<PushLatchSwitch>{
 				child: CustomPaint(
 					painter: _PushLatchPainter(widget),
 					size: Size(80,80),
-					child: Text("AA"),
+					child: Center(
+						child: Text(widget.isPressed?"1":"0"),
+					),
 				),
 				onTap: (){
 					print("PushLatchState onTap() ${widget.key}");

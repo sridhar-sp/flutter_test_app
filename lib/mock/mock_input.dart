@@ -21,6 +21,27 @@ final String jsonInput = """
         "global_key": "fr_2",
         "input_pin": 1
       }
+    },
+    {
+      "global_key": "sw_4",
+      "output_map": {
+        "global_key": "fr_2",
+        "input_pin": 2
+      }
+    },
+    {
+      "global_key": "sw_5",
+      "output_map": {
+        "global_key": "fr_3",
+        "input_pin": 1
+      }
+    },
+     {
+      "global_key": "sw_6",
+      "output_map": {
+        "global_key": "fr_3",
+        "input_pin": 2
+      }
     }
   ],
   "logic_gate_details": [
