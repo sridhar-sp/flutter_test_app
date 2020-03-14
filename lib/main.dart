@@ -35,7 +35,7 @@ class HomeWidget extends StatefulWidget {
 class HomeWidgetState extends State<HomeWidget> {
   Input _input;
 
-  Map<String, GlobalKey<BaseComponentState>> _globalListCache = Map();
+  Map<String, GlobalKey<BaseComponentState>> _logicGatesKeyMap = Map();
 
   List<PointPair> _pcbLayoutConnectionsPairList = List();
 
@@ -49,18 +49,21 @@ class HomeWidgetState extends State<HomeWidget> {
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       drawCircuitConnections();
+      drawSwitches();
+
+      setState(() {});
     });
   }
 
 
   void drawCircuitConnections() {
-    print("++++++== globalListCache == $_globalListCache");
+    print("++++++== globalListCache == $_logicGatesKeyMap");
 
     List<PointPair> connectionsPointPairList = List();
 
     _input.logicGates.forEach((componentsInRow) {
       componentsInRow.forEach((component) {
-        GlobalKey<BaseComponentState> outputComponentKey = _globalListCache[component.globalKey];
+        GlobalKey<BaseComponentState> outputComponentKey = _logicGatesKeyMap[component.globalKey];
 
         List<OutputMap> outputMapList = component.outputMapList;
         outputMapList.forEach((outputMappingDetails) {
@@ -68,21 +71,24 @@ class HomeWidgetState extends State<HomeWidget> {
               "${component.globalKey} output should connect to the input pin ${outputMappingDetails.input} of ${outputMappingDetails.globalKey} ");
 
           //Todo   validate the global key present in the cache or not.
-          GlobalKey<BaseComponentState> inputComponentKey = _globalListCache[outputMappingDetails.globalKey];
+          GlobalKey<BaseComponentState> inputComponentKey = _logicGatesKeyMap[outputMappingDetails.globalKey];
 
           connectionsPointPairList.add(PointPair(findPinLocation(outputComponentKey, false),
               findPinLocation(inputComponentKey, true, inputPinIndex: outputMappingDetails.input)));
         });
-
-        setState(() {
-          _pcbLayoutConnectionsPairList = connectionsPointPairList;
-
-          _switchInfoList.add(SwitchInfo(Point(10, 10),GlobalKey()));
-//          _switchInfoList.add(SwitchInfo(Point(100, 100),GlobalKey()));
-//          _switchInfoList.add(SwitchInfo(Point(200, 200),GlobalKey()));
-
-        });
       });
+    });
+  }
+
+  void drawSwitches(){
+
+    _input.switchDetails.forEach((switchElement) {
+      GlobalKey<BaseComponentState> inputComponentKey  =  _logicGatesKeyMap[switchElement.outputMap.globalKey];
+      Point inputLocation = findPinLocation(inputComponentKey, true,inputPinIndex: switchElement.outputMap.input);
+
+      print("drawSwitches ${switchElement.globalKey}");
+      _switchInfoList.add(SwitchInfo(inputLocation,GlobalKey(),switchElement.globalKey));
+
     });
   }
 
@@ -93,7 +99,7 @@ class HomeWidgetState extends State<HomeWidget> {
     Offset componentOffset = renderBox.localToGlobal(Offset.zero);
 
     if (isInput) {
-      inputPinIndex += -1;
+      inputPinIndex -= 1;;
 
       /// {@link locationDetails#inputLocation} is zero based index.
       if (inputPinIndex >= locationDetails.inputLocation.length) throw ArgumentError("Invalid input pin index");
@@ -107,6 +113,8 @@ class HomeWidgetState extends State<HomeWidget> {
 
   @override
   Widget build(BuildContext context) {
+    print("*********** build == $_logicGatesKeyMap");
+
     return Scaffold(
       body: Center(
         child: Stack(
@@ -143,15 +151,15 @@ class HomeWidgetState extends State<HomeWidget> {
 
   Widget getItemForLayout(LogicGate layout) {
     return Container(
-      width: 150,
-      height: 150,
+      width: BaseComponentStatefulWidget.WIDTH,
+      height: BaseComponentStatefulWidget.HEIGHT,
       child: getComponent(layout),
     );
   }
 
   Widget getComponent(LogicGate layout) {
     GlobalKey<BaseComponentState> key = GlobalKey();
-    _globalListCache[layout.globalKey] = key;
+    _logicGatesKeyMap[layout.globalKey] = key;
     switch (layout.gateType) {
       case LogicGateType.AND:
         return AndGate(key, layout.globalKey);

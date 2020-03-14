@@ -4,6 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 abstract class BaseComponentStatefulWidget extends StatefulWidget {
+
+  static const WIDTH = 150.0;
+  static const HEIGHT = 150.0;
+
   final String text;
   BaseComponentStatefulWidget(Key key, {this.text = ""}) : super(key: key);
 

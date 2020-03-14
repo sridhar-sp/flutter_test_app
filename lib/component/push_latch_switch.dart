@@ -16,6 +16,7 @@ class PushLatchSwitch extends StatefulWidget{
 
   @override
   State<PushLatchSwitch> createState() {
+  	print("PushLathcSwitch createState() ${key}");
     return PushLatchState();
   }
 }
@@ -24,20 +25,22 @@ class PushLatchState extends State<PushLatchSwitch>{
 
 	@override
   Widget build(BuildContext context) {
-		return GestureDetector(
-			child: Container(
-				padding: EdgeInsets.all(2.0),
+		print("PushLatchState build() ${widget.key}");
+		return Container(
+			padding: EdgeInsets.all(2.0),
+			child: GestureDetector(
 				child: CustomPaint(
 					painter: _PushLatchPainter(widget),
+					size: Size(80,80),
+					child: Text("AA"),
 				),
+				onTap: (){
+					print("PushLatchState onTap() ${widget.key}");
+					setState(() {
+						widget.isPressed = !widget.isPressed;
+					});
+				},
 			),
-			onTap: () {
-				setState(() {
-					widget.isPressed = !widget.isPressed;
-				});
-				widget._callback(widget.isPressed);
-			},
-
 		);
   }
 
@@ -56,7 +59,7 @@ class _PushLatchPainter extends CustomPainter{
 	    ..color = Colors.red
 	    ..strokeWidth = 2.0;
 
-    canvas.drawRect(Rect.fromLTWH(_widget._inputPoint.x, _widget._inputPoint.y, size.width, size.height), paint);
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
   }
 
   @override

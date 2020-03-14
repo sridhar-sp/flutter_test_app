@@ -4,7 +4,21 @@ final String jsonInput = """
     {
       "global_key": "sw_1",
       "output_map": {
-        "global_key": "sr_2",
+        "global_key": "fr_1",
+        "input_pin": 1
+      }
+    },
+    {
+      "global_key": "sw_2",
+      "output_map": {
+        "global_key": "fr_1",
+        "input_pin": 2
+      }
+    },
+    {
+      "global_key": "sw_3",
+      "output_map": {
+        "global_key": "fr_2",
         "input_pin": 1
       }
     }

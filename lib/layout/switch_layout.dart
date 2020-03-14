@@ -3,47 +3,77 @@ import 'dart:math';
 import 'package:flutter/widgets.dart';
 import 'package:test_web_app/component/push_latch_switch.dart';
 
-class SwitchLayout extends StatefulWidget{
+class SwitchLayout extends StatefulWidget {
 
-	bool switchState = false;
+	static const SWITCH_WIDTH = 40.0;
+	static const SWITCH_HEIGHT = 40.0;
 
-	List<SwitchInfo> _swithInfo;
+  bool switchState = false;
 
-	SwitchLayout(this._swithInfo);
+  List<SwitchInfo> _swithInfo;
 
-	@override
+  SwitchLayout(this._swithInfo);
+
+  @override
   State<StatefulWidget> createState() {
-		return _SwitchLayoutState();
+    return _SwitchLayoutState();
   }
 }
 
-class _SwitchLayoutState extends State<SwitchLayout>{
-	@override
-	Widget build(BuildContext context) {
-		return Stack(
-			children: widget._swithInfo.map((switchInfo) => toSwitch(switchInfo)).toList(),
-		);
-	}
+class _SwitchLayoutState extends State<SwitchLayout> {
+  _SwitchLayoutDelegate _switchLayoutDelegate;
 
+  @override
+  void initState() {
+    super.initState();
+    _switchLayoutDelegate = _SwitchLayoutDelegate(widget._swithInfo);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomMultiChildLayout(
+      delegate: _switchLayoutDelegate,
+      children: widget._swithInfo.map((switchInfo) => toSwitch(switchInfo)).toList(),
+    );
+  }
 }
 
-Widget toSwitch(SwitchInfo switchInfo){
-	print("toSwitch $switchInfo");
-	return Container(
-		child: PushLatchSwitch(switchInfo.globalKey, false,switchInfo.inputPinLocation, (bool value) {
-			print("calback $value");
-		}),
-		width: 80,
-		height: 80,
-	);
+class _SwitchLayoutDelegate extends MultiChildLayoutDelegate {
+  List<SwitchInfo> _swithInfoList;
+
+  _SwitchLayoutDelegate(this._swithInfoList);
+
+  @override
+  void performLayout(Size size) {
+    _swithInfoList.forEach((switchInfo) {
+      layoutChild(switchInfo.id, BoxConstraints.tight(Size(SwitchLayout.SWITCH_WIDTH, SwitchLayout.SWITCH_HEIGHT)));
+      positionChild(switchInfo.id, Offset(switchInfo.inputPinLocation.x-(SwitchLayout.SWITCH_WIDTH/2),
+		      switchInfo.inputPinLocation.y));
+    });
+  }
+
+  @override
+  bool shouldRelayout(MultiChildLayoutDelegate oldDelegate) {
+    return true;
+  }
 }
 
-class SwitchInfo{
+Widget toSwitch(SwitchInfo switchInfo) {
+  print("toSwitch ${switchInfo.toString()}");
+  return LayoutId(
+    id: switchInfo.id,
+    child: PushLatchSwitch(switchInfo.globalKey, false, switchInfo.inputPinLocation, (bool value) {
+      print("calback $value");
+    }),
+  );
+}
 
-	Point inputPinLocation;
+class SwitchInfo {
+  Point inputPinLocation;
 
-	GlobalKey<PushLatchState> globalKey;
+  GlobalKey<PushLatchState> globalKey;
 
-	SwitchInfo(this.inputPinLocation,this.globalKey);
+  String id;
 
+  SwitchInfo(this.inputPinLocation, this.globalKey, this.id);
 }
