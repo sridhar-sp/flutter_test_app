@@ -5,8 +5,8 @@ import 'package:test_web_app/component/push_latch_switch.dart';
 
 class SwitchLayout extends StatefulWidget {
 
-	static const SWITCH_WIDTH = 40.0;
-	static const SWITCH_HEIGHT = 40.0;
+	static const SWITCH_WIDTH = 55.0;
+	static const SWITCH_HEIGHT = 55.0;
 
   bool switchState = false;
 

@@ -21,7 +21,6 @@ abstract class BaseComponentState extends State<BaseComponentStatefulWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(2.0),
       child: CustomPaint(
         painter: getPainter(),
       ),

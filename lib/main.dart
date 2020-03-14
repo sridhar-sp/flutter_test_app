@@ -59,8 +59,6 @@ class HomeWidgetState extends State<HomeWidget> {
   void drawCircuitConnections() {
     print("++++++== globalListCache == $_logicGatesKeyMap");
 
-    List<PointPair> connectionsPointPairList = List();
-
     _input.logicGates.forEach((componentsInRow) {
       componentsInRow.forEach((component) {
         GlobalKey<BaseComponentState> outputComponentKey = _logicGatesKeyMap[component.globalKey];
@@ -73,7 +71,7 @@ class HomeWidgetState extends State<HomeWidget> {
           //Todo   validate the global key present in the cache or not.
           GlobalKey<BaseComponentState> inputComponentKey = _logicGatesKeyMap[outputMappingDetails.globalKey];
 
-          connectionsPointPairList.add(PointPair(findPinLocation(outputComponentKey, false),
+          _pcbLayoutConnectionsPairList.add(PointPair(findPinLocation(outputComponentKey, false),
               findPinLocation(inputComponentKey, true, inputPinIndex: outputMappingDetails.input)));
         });
       });
@@ -121,11 +119,8 @@ class HomeWidgetState extends State<HomeWidget> {
           children: <Widget>[
             SwitchLayout(_switchInfoList),
             PCBLayout(_pcbLayoutConnectionsPairList),
-            Padding(
-              padding: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 50),
-              child: Container(
-                child: constructLayoutFromJson(),
-              ),
+            IgnorePointer(
+              child: constructLayoutFromJson(),
             ),
           ],
         ),
