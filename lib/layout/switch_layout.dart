@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/widgets.dart';
 import 'package:test_web_app/component/push_latch_switch.dart';
+import 'package:test_web_app/model/model.dart';
 
 class SwitchLayout extends StatefulWidget {
   static const SWITCH_WIDTH = 55.0;
@@ -9,7 +10,9 @@ class SwitchLayout extends StatefulWidget {
 
   final List<SwitchLayoutDetail> _switchLayoutDetail;
 
-  SwitchLayout(this._switchLayoutDetail);
+  final Function(SwitchDetail switchDetail,bool value) _switchValueChangecallback;
+
+  SwitchLayout(this._switchLayoutDetail,this._switchValueChangecallback);
 
   @override
   State<StatefulWidget> createState() {
@@ -18,7 +21,7 @@ class SwitchLayout extends StatefulWidget {
 }
 
 class _SwitchLayoutState extends State<SwitchLayout> {
-  Map<String, bool> switchStateMap = Map();
+  Map<String, bool> _switchStateMap = Map();
 
   _SwitchLayoutDelegate _switchLayoutDelegate;
 
@@ -34,11 +37,12 @@ class _SwitchLayoutState extends State<SwitchLayout> {
       delegate: _switchLayoutDelegate,
       children: widget._switchLayoutDetail
           .map((switchInfo) =>
-              toSwitch(switchInfo, switchStateMap.containsKey(switchInfo.id) && switchStateMap[switchInfo.id],
+              toSwitch(switchInfo, _switchStateMap.containsKey(switchInfo.id) && _switchStateMap[switchInfo.id],
                   (GlobalKey<PushLatchState> key, bool value) {
                 setState(() {
-                  switchStateMap[switchInfo.id] = !value;
+                  _switchStateMap[switchInfo.id] = !value;
                 });
+                widget._switchValueChangecallback(switchInfo.switchDetail,!value);
               }))
           .toList(),
     );
@@ -66,8 +70,6 @@ class _SwitchLayoutDelegate extends MultiChildLayoutDelegate {
 }
 
 Widget toSwitch(SwitchLayoutDetail switchInfo, bool isPressed, Function(GlobalKey<PushLatchState> key, bool value) callback) {
-  print("toSwitch ${switchInfo.toString()}");
-
   return LayoutId(
     id: switchInfo.id,
     child: PushLatchSwitch(switchInfo.globalKey, isPressed, callback),
@@ -75,12 +77,14 @@ Widget toSwitch(SwitchLayoutDetail switchInfo, bool isPressed, Function(GlobalKe
 }
 
 class SwitchLayoutDetail  {
-  
+
   Point inputPinLocation;
 
   GlobalKey<PushLatchState> globalKey;
 
-  String id;
+  SwitchDetail switchDetail;
 
-  SwitchLayoutDetail(this.inputPinLocation, this.globalKey, this.id);
+  SwitchLayoutDetail(this.inputPinLocation, this.globalKey, this.switchDetail);
+
+  String get id => switchDetail.globalKey;
 }

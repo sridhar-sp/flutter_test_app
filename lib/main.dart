@@ -77,7 +77,7 @@ class HomeWidgetState extends State<HomeWidget> {
     _input.switchDetails.forEach((switchElement) {
       GlobalKey<BaseComponentState> inputComponentKey = _logicGatesKeyMap[switchElement.outputMap.globalKey];
       Point inputLocation = findPinLocation(inputComponentKey, true, inputPinIndex: switchElement.outputMap.input);
-      _switchLayoutDetailList.add(SwitchLayoutDetail(inputLocation, GlobalKey(), switchElement.globalKey));
+      _switchLayoutDetailList.add(SwitchLayoutDetail(inputLocation, GlobalKey(), switchElement));
     });
   }
 
@@ -108,7 +108,7 @@ class HomeWidgetState extends State<HomeWidget> {
       body: Center(
         child: Stack(
           children: <Widget>[
-            SwitchLayout(_switchLayoutDetailList),
+            SwitchLayout(_switchLayoutDetailList,onSwitchValueChange),
             PCBLayout(_pcbLayoutConnectionsPairList),
             IgnorePointer(
               child: constructLogicGatesLayoutFromInput(),
@@ -117,6 +117,11 @@ class HomeWidgetState extends State<HomeWidget> {
         ),
       ),
     );
+  }
+
+  void onSwitchValueChange(SwitchDetail switchDetail,bool value){
+    print("Input pin  ${switchDetail.outputMap.input} of gate "
+        "${switchDetail.outputMap.globalKey} is ${value}");
   }
 
   Column constructLogicGatesLayoutFromInput() {
