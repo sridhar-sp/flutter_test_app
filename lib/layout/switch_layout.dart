@@ -7,9 +7,9 @@ class SwitchLayout extends StatefulWidget {
   static const SWITCH_WIDTH = 55.0;
   static const SWITCH_HEIGHT = 55.0;
 
-  final List<SwitchInfo> _swithInfo;
+  final List<SwitchLayoutDetail> _switchLayoutDetail;
 
-  SwitchLayout(this._swithInfo);
+  SwitchLayout(this._switchLayoutDetail);
 
   @override
   State<StatefulWidget> createState() {
@@ -25,14 +25,14 @@ class _SwitchLayoutState extends State<SwitchLayout> {
   @override
   void initState() {
     super.initState();
-    _switchLayoutDelegate = _SwitchLayoutDelegate(widget._swithInfo);
+    _switchLayoutDelegate = _SwitchLayoutDelegate(widget._switchLayoutDetail);
   }
 
   @override
   Widget build(BuildContext context) {
     return CustomMultiChildLayout(
       delegate: _switchLayoutDelegate,
-      children: widget._swithInfo
+      children: widget._switchLayoutDetail
           .map((switchInfo) =>
               toSwitch(switchInfo, switchStateMap.containsKey(switchInfo.id) && switchStateMap[switchInfo.id],
                   (GlobalKey<PushLatchState> key, bool value) {
@@ -46,7 +46,7 @@ class _SwitchLayoutState extends State<SwitchLayout> {
 }
 
 class _SwitchLayoutDelegate extends MultiChildLayoutDelegate {
-  List<SwitchInfo> _swithInfoList;
+  List<SwitchLayoutDetail> _swithInfoList;
 
   _SwitchLayoutDelegate(this._swithInfoList);
 
@@ -65,21 +65,22 @@ class _SwitchLayoutDelegate extends MultiChildLayoutDelegate {
   }
 }
 
-Widget toSwitch(SwitchInfo switchInfo, bool isPressed, Function(GlobalKey<PushLatchState> key, bool value) callback) {
+Widget toSwitch(SwitchLayoutDetail switchInfo, bool isPressed, Function(GlobalKey<PushLatchState> key, bool value) callback) {
   print("toSwitch ${switchInfo.toString()}");
 
   return LayoutId(
     id: switchInfo.id,
-    child: PushLatchSwitch(switchInfo.globalKey, isPressed, switchInfo.inputPinLocation, callback),
+    child: PushLatchSwitch(switchInfo.globalKey, isPressed, callback),
   );
 }
 
-class SwitchInfo {
+class SwitchLayoutDetail  {
+  
   Point inputPinLocation;
 
   GlobalKey<PushLatchState> globalKey;
 
   String id;
 
-  SwitchInfo(this.inputPinLocation, this.globalKey, this.id);
+  SwitchLayoutDetail(this.inputPinLocation, this.globalKey, this.id);
 }

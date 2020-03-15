@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 class PushLatchSwitch extends StatefulWidget{
@@ -8,9 +6,7 @@ class PushLatchSwitch extends StatefulWidget{
 
 	final Function(GlobalKey<PushLatchState> key,bool value) _callback;
 
-	final Point _inputPoint;
-
-  PushLatchSwitch(Key key,this.isPressed ,this._inputPoint,this._callback) : super(key:key);
+  PushLatchSwitch(Key key,this.isPressed ,this._callback) : super(key:key);
 
   @override
   State<PushLatchSwitch> createState() {
@@ -20,7 +16,6 @@ class PushLatchSwitch extends StatefulWidget{
 }
 
 class PushLatchState extends State<PushLatchSwitch>{
-bool a ;
 	@override
   Widget build(BuildContext context) {
 		print("PushLatchState build() ${widget.key}");

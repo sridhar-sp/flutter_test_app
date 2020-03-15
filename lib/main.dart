@@ -7,7 +7,7 @@ import 'package:test_web_app/component/base_component_widgets.dart';
 import 'package:test_web_app/layout/pcb_layout.dart';
 import 'package:test_web_app/layout/switch_layout.dart';
 import 'package:test_web_app/mock/mock_input.dart';
-import 'package:test_web_app/model/layout_model.dart';
+import 'package:test_web_app/model/model.dart';
 
 void main() => runApp(MyApp());
 
@@ -37,7 +37,7 @@ class HomeWidgetState extends State<HomeWidget> {
 
   List<PointPair> _pcbLayoutConnectionsPairList = List();
 
-  List<SwitchInfo> _switchInfoList = List();
+  List<SwitchLayoutDetail> _switchLayoutDetailList = List();
 
   @override
   void initState() {
@@ -77,7 +77,7 @@ class HomeWidgetState extends State<HomeWidget> {
     _input.switchDetails.forEach((switchElement) {
       GlobalKey<BaseComponentState> inputComponentKey = _logicGatesKeyMap[switchElement.outputMap.globalKey];
       Point inputLocation = findPinLocation(inputComponentKey, true, inputPinIndex: switchElement.outputMap.input);
-      _switchInfoList.add(SwitchInfo(inputLocation, GlobalKey(), switchElement.globalKey));
+      _switchLayoutDetailList.add(SwitchLayoutDetail(inputLocation, GlobalKey(), switchElement.globalKey));
     });
   }
 
@@ -108,7 +108,7 @@ class HomeWidgetState extends State<HomeWidget> {
       body: Center(
         child: Stack(
           children: <Widget>[
-            SwitchLayout(_switchInfoList),
+            SwitchLayout(_switchLayoutDetailList),
             PCBLayout(_pcbLayoutConnectionsPairList),
             IgnorePointer(
               child: constructLogicGatesLayoutFromInput(),

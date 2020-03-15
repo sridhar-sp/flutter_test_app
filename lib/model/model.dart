@@ -10,13 +10,13 @@ const KEY_SWITCH_DETAILS = "switch_details";
 class Input {
   List<List<LogicGate>> _logicGates;
 
-  List<Switch> _switchDetails;
+  List<SwitchDetail> _switchDetails;
 
   Input(this._logicGates, this._switchDetails);
 
   List<List<LogicGate>> get logicGates => _logicGates;
 
-  List<Switch> get switchDetails => _switchDetails;
+  List<SwitchDetail> get switchDetails => _switchDetails;
 
   @override
   String toString() {
@@ -37,11 +37,11 @@ class LogicGate {
   }
 }
 
-class Switch {
+class SwitchDetail {
   String globalKey;
   OutputMap outputMap;
 
-  Switch(this.globalKey, this.outputMap);
+  SwitchDetail(this.globalKey, this.outputMap);
 
   @override
   String toString() {
@@ -74,7 +74,7 @@ class LogicGateType {
 Input toInput(String json) {
   List<List<LogicGate>> _logicGates = List();
 
-  List<Switch> _switchDetails = List();
+  List<SwitchDetail> _switchDetails = List();
 
   var jsonDecodedInput = jsonDecode(json);
 
@@ -106,7 +106,7 @@ Input toInput(String json) {
   _switchDetails = List();
 
   switchDetails.forEach((switchElement) {
-    _switchDetails.add(Switch(switchElement[KEY_GLOBAL_KEY],
+    _switchDetails.add(SwitchDetail(switchElement[KEY_GLOBAL_KEY],
         OutputMap(switchElement[KEY_OUTPUT_MAP][KEY_GLOBAL_KEY], switchElement[KEY_OUTPUT_MAP][KEY_INPUT_PIN])));
   });
 
